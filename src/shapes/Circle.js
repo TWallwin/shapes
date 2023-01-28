@@ -1,4 +1,4 @@
-import { getDistanceBetweenPoints, doCirclesIntersect } from "../helpers/mathsHelpers";
+import { getDistanceBetweenPoints, doCirclesIntersect, calculateDeflection, calculateNewPosition } from "../helpers/mathsHelpers";
 import { getCanvas } from "../helpers/windowHelpers";
 import { Shapes } from "../Shapes";
 
@@ -10,26 +10,57 @@ export default class Circle {
     this.timeId = Date.now()
 
     this.position = { x, y }
-    this.velocity = {dx: 0, dy: -1}
+    this.velocity = {x: 0, y: -2}
   }
 
   doGravity() {
-    if (this.checkCollisions()) {
-      return 
+    if (!this.checkCollisions()) {
+      this.velocity = {x: this.velocity.x, y: this.velocity.y + 0.1}
+
     }
 
-    this.velocity = {dx: this.velocity.dx, dy: this.velocity.dy + 0.1}
     this.position = {
-      x: this.position.x + this.velocity.dx,
-      y: this.position.y + this.velocity.dy,
+      x: this.position.x + this.velocity.x,
+      y: this.position.y + this.velocity.y,
     }
-   }
+  }
+  
+  handlePositionChange(shape) {
+    this.position = calculateNewPosition(this, shape)
+        let i = 0;
+        while (doCirclesIntersect(this, shape) && i < 100) {
+          this.position = calculateNewPosition(this, shape)
+          i++;
+        }
+  }
 
   checkCollisions() {
     return Shapes.getShapes().some((shape) => {
+
+      if ((this.timeId !== shape.timeId && doCirclesIntersect(this, shape))) {
+        console.log(this.velocity)
+        console.log(calculateDeflection(this.velocity, shape.getNormalTo(this.position)), 'deflection')
+        const normal = shape.getNormalTo(this.position)
+        this.velocity = calculateDeflection(this.velocity, normal)
+
+        shape.velocity = calculateDeflection(shape.velocity, normal)
+        
+        this.handlePositionChange(shape)
+        
+        return true
+      }
     
-      if ((this.timeId !== shape.timeId && doCirclesIntersect(this, shape)) || this.isTouchingSide()) {
-        this.velocity = { dx: 0, dy: 0 }
+      if (this.isTouchingFloor()) {
+      
+        this.velocity = {x: this.velocity.x , y: -this.velocity.y }
+        
+        return true
+      }
+
+      if (this.isTouchingSide()) {
+        
+        this.velocity = { x: -this.velocity.x, y: this.velocity.y }
+
         return true
       }
       
@@ -37,8 +68,12 @@ export default class Circle {
     })
   }
   
-  isTouchingSide() {
+  isTouchingFloor() {
     return this.position.y >= getCanvas().height - this.r
+  }
+
+  isTouchingSide() { 
+    return this.position.x <= this.r || this.position.x >= getCanvas().width - this.r
   }
 
   draw() {
@@ -55,4 +90,8 @@ export default class Circle {
   isPointInside(point) {
     return getDistanceBetweenPoints(point, { x: this.position.x, y: this.position.y }) <= this.r * 2;
   }
+
+  getNormalTo(point) { 
+   return {x: point.x - this.position.x, y: point.y - this.position.y}
+ }
 }
