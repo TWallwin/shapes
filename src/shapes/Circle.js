@@ -38,8 +38,6 @@ export default class Circle {
     return Shapes.getShapes().some((shape) => {
 
       if ((this.timeId !== shape.timeId && doCirclesIntersect(this, shape))) {
-        console.log(this.velocity)
-        console.log(calculateDeflection(this.velocity, shape.getNormalTo(this.position)), 'deflection')
         const normal = shape.getNormalTo(this.position)
         this.velocity = calculateDeflection(this.velocity, normal)
 

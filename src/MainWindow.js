@@ -16,7 +16,6 @@ export default class MainWindow extends React.Component {
 
   render() {
     
-    console.log('rendered')
     return (
       <div className="window-container">
         <div onClick={this.handleClick.bind(this)} className="main-window">

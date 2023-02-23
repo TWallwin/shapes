@@ -35,5 +35,5 @@ export function calculateNewPosition(shape1, shape2) {
 
   const overlapDistance = getOverlapDistance(shape1, shape2)/magnitude(newPositionVector)
   
-  return { x: shape1.position.x + overlapDistance * newPositionVector.x, y: shape1.position.y + overlapDistance * newPositionVector.y }
+  return { x: shape1.position.x + 2*overlapDistance * newPositionVector.x, y: shape1.position.y + 2*overlapDistance * newPositionVector.y }
 }
